@@ -1,0 +1,1 @@
+export const PRICING_STRATEGIES = Symbol('PRICING_STRATEGIES');
