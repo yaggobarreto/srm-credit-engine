@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CurrencyModule } from './currency/currency.module';
+import { PricingConfigModule } from './pricing-config/pricing-config.module';
 import { PricingModule } from './pricing/pricing.module';
+import { ReceivablesModule } from './receivables/receivables.module';
+import { SettlementsModule } from './settlements/settlements.module';
 
 @Module({
   imports: [
@@ -24,7 +27,10 @@ import { PricingModule } from './pricing/pricing.module';
       }),
     }),
     PricingModule,
+    PricingConfigModule,
     CurrencyModule,
+    ReceivablesModule,
+    SettlementsModule,
   ],
 })
 export class AppModule {}
