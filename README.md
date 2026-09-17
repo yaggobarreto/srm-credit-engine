@@ -46,6 +46,8 @@ npm run start:dev
 
 ## Testes
 
+**Unitários** (regra de negócio, repository mockado — não precisa de banco):
+
 ```bash
 cd backend
 npm test
@@ -55,6 +57,18 @@ Inclui os 3 golden cases da seção 4.3 do desafio
 (`src/pricing/pricing.service.golden-cases.spec.ts`), que precisam bater ao
 centavo.
 
+**Integração/e2e** (caixa-preta contra a API real rodando em Docker):
+
+```bash
+docker compose up -d --build   # a partir da raiz do repo
+cd backend
+npm run test:e2e
+```
+
+Cobre os golden cases via HTTP real, idempotência (repetir a mesma
+`Idempotency-Key` não duplica) e concorrência (duas liquidações simultâneas
+do mesmo recebível — só uma vence, a outra recebe `409`).
+
 ## Estrutura
 
 ```
@@ -62,10 +76,14 @@ srm-credit-engine/
 ├── SPEC.md              # premissas da Fase 0
 ├── docker-compose.yml
 └── backend/
-    └── src/
-        ├── common/money/     # value object monetário (decimal.js)
-        ├── pricing/          # motor de precificação (Strategy pattern)
-        └── currency/         # câmbio com vigência (append-only)
+    ├── src/
+    │   ├── common/           # Money (decimal.js), cálculo de prazo, utils
+    │   ├── pricing/          # motor de precificação (Strategy pattern)
+    │   ├── pricing-config/   # taxa base da mesa, com vigência
+    │   ├── currency/         # câmbio com vigência (append-only)
+    │   ├── receivables/      # cadastro de recebíveis
+    │   └── settlements/      # liquidação: ACID, idempotente, auditoria imutável
+    └── test/                 # testes de integração/e2e (contra API real)
 ```
 
 ## Documentos do case
