@@ -66,8 +66,9 @@ npm run test:e2e
 ```
 
 Cobre os golden cases via HTTP real, idempotência (repetir a mesma
-`Idempotency-Key` não duplica) e concorrência (duas liquidações simultâneas
-do mesmo recebível — só uma vence, a outra recebe `409`).
+`Idempotency-Key` não duplica), concorrência (duas liquidações simultâneas
+do mesmo recebível — só uma vence, a outra recebe `409`) e o extrato
+(filtro por cedente/moeda, paginação server-side).
 
 ## Estrutura
 
@@ -82,7 +83,8 @@ srm-credit-engine/
     │   ├── pricing-config/   # taxa base da mesa, com vigência
     │   ├── currency/         # câmbio com vigência (append-only)
     │   ├── receivables/      # cadastro de recebíveis
-    │   └── settlements/      # liquidação: ACID, idempotente, auditoria imutável
+    │   ├── settlements/      # liquidação: ACID, idempotente, auditoria imutável
+    │   └── reports/          # extrato paginado (query builder, filtro período/cedente/moeda)
     └── test/                 # testes de integração/e2e (contra API real)
 ```
 

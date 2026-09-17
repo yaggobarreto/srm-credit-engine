@@ -5,6 +5,7 @@ import { CurrencyModule } from './currency/currency.module';
 import { PricingConfigModule } from './pricing-config/pricing-config.module';
 import { PricingModule } from './pricing/pricing.module';
 import { ReceivablesModule } from './receivables/receivables.module';
+import { ReportsModule } from './reports/reports.module';
 import { SettlementsModule } from './settlements/settlements.module';
 
 @Module({
@@ -31,6 +32,7 @@ import { SettlementsModule } from './settlements/settlements.module';
     CurrencyModule,
     ReceivablesModule,
     SettlementsModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}
