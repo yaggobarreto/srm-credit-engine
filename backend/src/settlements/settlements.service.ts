@@ -2,11 +2,8 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import Decimal from 'decimal.js';
 import { DataSource } from 'typeorm';
 import { isUniqueViolation } from '../common/db/unique-violation';
-import { calculateTermInMonths } from '../common/date/term';
 import { Money } from '../common/money/money';
-import { CurrencyService } from '../currency/currency.service';
-import { PricingConfigService } from '../pricing-config/pricing-config.service';
-import { PricingService } from '../pricing/pricing.service';
+import { PricingResolutionService } from '../pricing/pricing-resolution.service';
 import { ReceivableEntity } from '../receivables/entities/receivable.entity';
 import { ReceivableStatus } from '../receivables/receivable-status.enum';
 import { SettlementEntity } from './entities/settlement.entity';
@@ -27,9 +24,7 @@ export interface SettleReceivableOutput {
 export class SettlementsService {
   constructor(
     private readonly dataSource: DataSource,
-    private readonly pricingService: PricingService,
-    private readonly pricingConfigService: PricingConfigService,
-    private readonly currencyService: CurrencyService,
+    private readonly pricingResolutionService: PricingResolutionService,
   ) {}
 
   async settle(input: SettleReceivableInput, idempotencyKey: string): Promise<SettleReceivableOutput> {
@@ -61,23 +56,13 @@ export class SettlementsService {
         throw new ConflictException(`Recebível ${receivable.id} já foi liquidado`);
       }
 
-      const baseRateConfig = await this.pricingConfigService.getLatestBaseRate();
-      const termMonths = calculateTermInMonths(receivable.operationDate, receivable.dueDate);
-
-      let exchangeRate: Decimal | undefined;
-      if (receivable.paymentCurrency === 'USD') {
-        exchangeRate = input.exchangeRate
-          ? new Decimal(input.exchangeRate)
-          : new Decimal((await this.currencyService.getLatestRate('USD', 'BRL')).rate);
-      }
-
-      const pricingResult = this.pricingService.price({
+      const pricingResult = await this.pricingResolutionService.resolve({
         type: receivable.type,
         faceValue: Money.fromString(receivable.faceValue),
-        termMonths,
-        baseRate: new Decimal(baseRateConfig.baseRate),
+        operationDate: receivable.operationDate,
+        dueDate: receivable.dueDate,
         paymentCurrency: receivable.paymentCurrency,
-        exchangeRate,
+        exchangeRateOverride: input.exchangeRate ? new Decimal(input.exchangeRate) : undefined,
       });
 
       const settlement = manager.create(SettlementEntity, {
@@ -85,13 +70,13 @@ export class SettlementsService {
         receivableId: receivable.id,
         receivableType: receivable.type,
         faceValue: receivable.faceValue,
-        termMonths,
-        baseRateUsed: baseRateConfig.baseRate,
+        termMonths: pricingResult.termMonths,
+        baseRateUsed: pricingResult.baseRateUsed.toFixed(6),
         spreadUsed: pricingResult.spread.toFixed(6),
         presentValueBRL: pricingResult.presentValueBRL.toFixed(2),
         discountBRL: pricingResult.discountBRL.toFixed(2),
         paymentCurrency: receivable.paymentCurrency,
-        exchangeRateUsed: exchangeRate ? exchangeRate.toFixed(6) : null,
+        exchangeRateUsed: pricingResult.exchangeRateUsed ? pricingResult.exchangeRateUsed.toFixed(6) : null,
         finalAmount: pricingResult.finalAmount.toFixed(2),
         settledAt: new Date(),
       });
