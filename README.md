@@ -91,6 +91,6 @@ srm-credit-engine/
 ## Documentos do case
 
 - [`SPEC.md`](./SPEC.md) — premissas, perguntas ao negócio, precisão numérica
-- `REVIEW.md` — code review reverso (Fase 2, a entregar)
-- `AI_USAGE.md` — engenharia da colaboração com IA (a entregar)
-- `DECISIONS.md` — cortes e simplificações deliberados (a entregar)
+- [`REVIEW.md`](./REVIEW.md) — code review reverso do Anexo A (Fase 2)
+- [`AI_USAGE.md`](./AI_USAGE.md) — engenharia da colaboração com IA
+- [`DECISIONS.md`](./DECISIONS.md) — cortes e simplificações deliberados
