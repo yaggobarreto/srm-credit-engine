@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: srm-credit-engine-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: srm
+      POSTGRES_PASSWORD: srm
+      POSTGRES_DB: srm_credit_engine
+    ports:
+      - "5432:5432"
+    volumes:
+      - srm-credit-engine-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U srm -d srm_credit_engine"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: srm-credit-engine-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # NODE_ENV=development aqui é deliberado: mantém o TypeORM
+      # synchronize=true para este ambiente de demo/case, já que não
+      # escrevemos migrations versionadas (ver DECISIONS.md).
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: srm
+      DB_PASSWORD: srm
+      DB_NAME: srm_credit_engine
+    ports:
+      - "3000:3000"
+
+volumes:
+  srm-credit-engine-db-data:
