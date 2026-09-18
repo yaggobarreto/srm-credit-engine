@@ -39,5 +39,19 @@ services:
     ports:
       - "3000:3000"
 
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # O browser roda no host, então aponta para a porta publicada da
+        # API (localhost), não para o hostname interno da rede do compose.
+        VITE_API_BASE_URL: http://localhost:3000
+    container_name: srm-credit-engine-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
 volumes:
   srm-credit-engine-db-data:
