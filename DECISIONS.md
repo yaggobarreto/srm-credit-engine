@@ -87,6 +87,12 @@ Staff. Ficaram de fora, deliberadamente:
   tem `healthcheck` no serviço `db`). Suficiente para o compose local
   (o backend depende do banco saudável antes de subir); um endpoint
   `/health` dedicado seria necessário para orquestração real (k8s/ECS).
+- **CORS liberado (`app.enableCors()` sem restrição de origem).** O
+  frontend roda numa porta diferente da API em desenvolvimento (Vite em
+  `:5173`, API em `:3000`). Restringir a origem exata é trivial
+  (`origin: 'http://localhost:5173'`), mas não fiz isso porque não há uma
+  origem de produção definida ainda — deixaria explícito como pendência de
+  configuração de deploy, junto com autenticação.
 
 ## 4. O que eu faria diferente com mais tempo (não é corte, é honestidade)
 

@@ -7,7 +7,8 @@ Engenheiro(a) de Software Júnior/Pleno Fullstack na SRM Asset.
 
 - **Backend:** NestJS + TypeScript (modo `strict`), TypeORM + PostgreSQL,
   `decimal.js` para toda operação monetária (nunca `float`/`double`).
-- **Frontend:** React (a implementar).
+- **Frontend:** React + TypeScript (Vite), sem lib de estado global (não se
+  justifica para duas telas) — `fetch` direto numa camada fina de API.
 - **Infra local:** Docker Compose (app + banco).
 
 Justificativa: TypeScript ponta a ponta dá tipagem forte em todo o sistema
@@ -24,9 +25,21 @@ Pré-requisito: Docker Desktop rodando.
 docker compose up -d --build
 ```
 
-- API disponível em `http://localhost:3000`
+Sobe os três serviços — banco, API e frontend — com um comando só:
+
+- Frontend em `http://localhost:5173`
+- API em `http://localhost:3000`
 - Documentação Swagger em `http://localhost:3000/docs`
 - Postgres exposto em `localhost:5432` (usuário/senha/db: `srm`/`srm`/`srm_credit_engine`)
+
+Antes de usar o painel pela primeira vez, cadastre uma taxa base e um
+câmbio (ainda não há UI para isso — é configuração da mesa, não do
+operador):
+
+```bash
+curl -X POST http://localhost:3000/pricing-config/base-rate -H "Content-Type: application/json" -d '{"baseRate":"0.01"}'
+curl -X POST http://localhost:3000/currency-rates -H "Content-Type: application/json" -d '{"baseCurrency":"USD","quoteCurrency":"BRL","rate":"5.4321"}'
+```
 
 Para parar:
 
@@ -43,6 +56,22 @@ cp .env.example .env
 npm install
 npm run start:dev
 ```
+
+### Frontend em modo desenvolvimento (hot-reload)
+
+Alternativa ao frontend containerizado da Opção 1 — útil para editar com
+recarregamento automático:
+
+```bash
+cd frontend
+cp .env.example .env   # aponta para http://localhost:3000 por padrão
+npm install
+npm run dev
+```
+
+Abre em `http://localhost:5173`. Precisa da API rodando (Docker Compose ou
+`npm run start:dev` no backend) e da taxa base/câmbio já cadastrados (ver
+os `curl` da Opção 1).
 
 ## Testes
 
@@ -76,16 +105,23 @@ do mesmo recebível — só uma vence, a outra recebe `409`) e o extrato
 srm-credit-engine/
 ├── SPEC.md              # premissas da Fase 0
 ├── docker-compose.yml
-└── backend/
-    ├── src/
-    │   ├── common/           # Money (decimal.js), cálculo de prazo, utils
-    │   ├── pricing/          # motor de precificação (Strategy pattern)
-    │   ├── pricing-config/   # taxa base da mesa, com vigência
-    │   ├── currency/         # câmbio com vigência (append-only)
-    │   ├── receivables/      # cadastro de recebíveis
-    │   ├── settlements/      # liquidação: ACID, idempotente, auditoria imutável
-    │   └── reports/          # extrato paginado (query builder, filtro período/cedente/moeda)
-    └── test/                 # testes de integração/e2e (contra API real)
+├── backend/
+│   ├── src/
+│   │   ├── common/           # Money (decimal.js), cálculo de prazo, utils
+│   │   ├── pricing/          # motor de precificação (Strategy pattern) + simulação
+│   │   ├── pricing-config/   # taxa base da mesa, com vigência
+│   │   ├── currency/         # câmbio com vigência (append-only)
+│   │   ├── receivables/      # cadastro de recebíveis
+│   │   ├── settlements/      # liquidação: ACID, idempotente, auditoria imutável
+│   │   └── reports/          # extrato paginado (query builder, filtro período/cedente/moeda)
+│   └── test/                 # testes de integração/e2e (contra API real)
+└── frontend/
+    └── src/
+        ├── api/               # cliente fino por recurso (fetch)
+        ├── hooks/             # usePricingSimulation, useSettlementsReport
+        ├── components/        # OperatorPanel, TransactionsGrid
+        ├── types/             # tipos compartilhados com os DTOs do backend
+        └── utils/             # formatação de moeda/data, validação de formulário
 ```
 
 ## Documentos do case

@@ -6,6 +6,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Painel do operador (frontend) roda numa origem diferente da API em
+  // desenvolvimento (Vite em outra porta) — CORS liberado por simplicidade
+  // nesta entrega; em produção restringiria a origem exata do frontend.
+  app.enableCors();
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
