@@ -93,6 +93,18 @@ Staff. Ficaram de fora, deliberadamente:
   (`origin: 'http://localhost:5173'`), mas não fiz isso porque não há uma
   origem de produção definida ainda — deixaria explícito como pendência de
   configuração de deploy, junto com autenticação.
+- **Sem testes automatizados no frontend** (nenhum Vitest/React Testing
+  Library configurado — `frontend/package.json` só tem `dev`/`build`/
+  `lint`/`preview`). O desafio pede testes explicitamente pro motor de
+  precificação (backend), não pro frontend na seção 4.2. A validação que
+  existe foi manual, no navegador, contra a API real: os 3 golden cases
+  batendo na simulação em tempo real, o fluxo completo de liquidação
+  atualizando o grid, filtro/paginação, responsividade — não substitui
+  teste automatizado, mas foi verificação de verdade, não só "parece que
+  funciona". Se fosse continuar o projeto, os primeiros testes que eu
+  escreveria seriam para `usePricingSimulation` e `useSettlementsReport`
+  (a lógica de estado é onde um bug silencioso mais provavelmente
+  apareceria), não para os componentes de apresentação em si.
 
 ## 4. O que eu faria diferente com mais tempo (não é corte, é honestidade)
 
