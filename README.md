@@ -107,7 +107,7 @@ srm-credit-engine/
 ├── docker-compose.yml
 ├── backend/
 │   ├── src/
-│   │   ├── common/           # Money (decimal.js), cálculo de prazo, utils
+│   │   ├── common/           # Money (decimal.js), cálculo de prazo, exception filter global
 │   │   ├── pricing/          # motor de precificação (Strategy pattern) + simulação
 │   │   ├── pricing-config/   # taxa base da mesa, com vigência
 │   │   ├── currency/         # câmbio com vigência (append-only)
